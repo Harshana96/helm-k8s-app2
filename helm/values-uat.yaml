@@ -1,0 +1,5 @@
+replicaCount: 2
+ingress:
+  enabled: true
+  host: uat.app2.local
+namespace: uat
