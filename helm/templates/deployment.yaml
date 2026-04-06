@@ -1,23 +1,35 @@
-apiVersion: apps/v1
-kind: Deployment
+# deployment.yaml — tells Kubernetes HOW to run your app (which image, how many copies)
+
+apiVersion: apps/v1          # API version that supports Deployment resource
+kind: Deployment             # type of Kubernetes resource we are creating
+
 metadata:
-  name: {{ .Release.Name }}
-  namespace: {{ .Values.namespace }}
+  name: {{ .Release.Name }}  # Helm fills this with the release name (e.g. nginx-app2-dev)
+  namespace: {{ .Values.namespace }}  # which namespace to deploy into (from values file)
   labels:
-    app: {{ .Release.Name }}
+    app: {{ .Release.Name }} # label used to identify and group related resources
+
 spec:
-  replicas: {{ .Values.replicaCount }}
+  replicas: {{ .Values.replicaCount }}  # how many pod copies to run (from values file)
+
   selector:
     matchLabels:
-      app: {{ .Release.Name }}
-  template:
+      app: {{ .Release.Name }}  # Deployment finds its pods using this label
+                                 # must match the label in template.metadata.labels below
+
+  template:                    # blueprint for each pod that will be created
     metadata:
       labels:
-        app: {{ .Release.Name }}
-    spec:
+        app: {{ .Release.Name }}  # label attached to every pod (used by selector above)
+
+    spec:                      # what runs inside the pod
       containers:
-        - name: {{ .Release.Name }}
+        - name: {{ .Release.Name }}  # container name inside the pod
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          # full image name e.g. nginx:alpine — repository and tag from values file
+
           imagePullPolicy: {{ .Values.image.pullPolicy }}
+          # IfNotPresent = use cached image if available, only pull if not found locally
+
           ports:
-            - containerPort: 80
+            - containerPort: 80  # port the container listens on inside the pod

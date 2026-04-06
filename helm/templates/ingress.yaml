@@ -1,21 +1,37 @@
+# ingress.yaml — exposes your app to the outside world via a hostname
+# acts like a reverse proxy — routes external HTTP traffic to the correct Service
+
 {{- if .Values.ingress.enabled }}
-apiVersion: networking.k8s.io/v1
-kind: Ingress
+# Helm condition — only create this resource if ingress.enabled = true in values file
+# if false, this entire file is skipped
+
+apiVersion: networking.k8s.io/v1  # API version for Ingress resource
+kind: Ingress                      # type of Kubernetes resource we are creating
+
 metadata:
-  name: {{ .Release.Name }}
-  namespace: {{ .Values.namespace }}
+  name: {{ .Release.Name }}        # ingress name
+  namespace: {{ .Values.namespace }}  # must match namespace of the Service
   annotations:
     nginx.ingress.kubernetes.io/rewrite-target: /
+    # tells the ingress controller to rewrite the URL path to /
+    # e.g. requests to /app get forwarded as / to the backend
+
 spec:
   rules:
     - host: {{ .Values.ingress.host }}
+      # the hostname this ingress listens on e.g. dev.app2.local
+      # requests with this Host header get routed here
+
       http:
         paths:
-          - path: /
-            pathType: Prefix
+          - path: /               # match all paths starting with /
+            pathType: Prefix      # Prefix = match /anything, Exact = match only /
+
             backend:
               service:
-                name: {{ .Release.Name }}
+                name: {{ .Release.Name }}  # forward traffic to this Service
                 port:
-                  number: {{ .Values.service.port }}
+                  number: {{ .Values.service.port }}  # on this port (80)
+
 {{- end }}
+# closes the Helm if condition started at the top
